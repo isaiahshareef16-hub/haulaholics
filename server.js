@@ -15,7 +15,10 @@ const crypto = require('crypto');
 const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
-
+// Handle BigInt serialization from Square SDK
+app.set('json replacer', (key, value) =>
+  typeof value === 'bigint' ? value.toString() : value
+);
 // ── Square Client ──
 const squareClient = new Client({
   accessToken: process.env.SQUARE_ACCESS_TOKEN,
