@@ -1,0 +1,15 @@
+{
+  "name": "haulaholics-card-on-file",
+  "version": "1.0.0",
+  "description": "Haul-A-Holics secure card-on-file page — saves customer cards to Square without charging",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "square": "^38.0.0"
+  }
+}

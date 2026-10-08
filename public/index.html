@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Haul-A-Holics — Secure Card on File</title>
+  <style>
+    :root {
+      --navy: #1B2A4A;
+      --green: #2E7D32;
+      --orange: #E65100;
+      --light-bg: #F5F7FA;
+      --card-bg: #FFFFFF;
+      --text: #1B2A4A;
+      --text-light: #5A6A7A;
+      --border: #D0D7E0;
+      --success-bg: #E8F5E9;
+      --error-bg: #FFEBEE;
+      --error-text: #C62828;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--light-bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px;
+    }
+
+    .container {
+      max-width: 480px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* ── Header ── */
+    .header {
+      text-align: center;
+      padding: 32px 0 24px;
+    }
+
+    .logo-circle {
+      width: 72px;
+      height: 72px;
+      background: var(--navy);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+    }
+
+    .logo-circle svg {
+      width: 36px;
+      height: 36px;
+      fill: #FFFFFF;
+    }
+
+    .header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 4px;
+    }
+
+    .header p {
+      font-size: 14px;
+      color: var(--text-light);
+      line-height: 1.5;
+    }
+
+    /* ── Card Form ── */
+    .card-form {
+      background: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+      padding: 28px 24px;
+      margin-bottom: 16px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 16px;
+      color: var(--text);
+      background: #FAFBFC;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--navy);
+      background: #FFFFFF;
+    }
+
+    .form-group input::placeholder {
+      color: #A0AAB8;
+    }
+
+    .name-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    /* Square card container styling */
+    #card-container {
+      min-height: 100px;
+      padding: 0;
+    }
+
+    /* ── Submit Button ── */
+    .submit-btn {
+      width: 100%;
+      padding: 16px;
+      background: var(--green);
+      color: #FFFFFF;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      margin-top: 8px;
+    }
+
+    .submit-btn:hover {
+      background: #256B29;
+    }
+
+    .submit-btn:active {
+      transform: scale(0.98);
+    }
+
+    .submit-btn:disabled {
+      background: #94B897;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .submit-btn .spinner {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2.5px solid rgba(255,255,255,0.3);
+      border-top-color: #FFFFFF;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ── Messages ── */
+    .message {
+      padding: 14px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      line-height: 1.5;
+      margin-top: 16px;
+      display: none;
+    }
+
+    .message.error {
+      background: var(--error-bg);
+      color: var(--error-text);
+      display: block;
+    }
+
+    .message.success {
+      background: var(--success-bg);
+      color: var(--green);
+      display: block;
+    }
+
+    /* ── Success Screen ── */
+    .success-screen {
+      display: none;
+      text-align: center;
+      padding: 40px 24px;
+    }
+
+    .success-screen.visible {
+      display: block;
+    }
+
+    .success-icon {
+      width: 80px;
+      height: 80px;
+      background: var(--success-bg);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+    }
+
+    .success-icon svg {
+      width: 40px;
+      height: 40px;
+      stroke: var(--green);
+      fill: none;
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .success-screen h2 {
+      font-size: 22px;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+
+    .success-screen p {
+      font-size: 15px;
+      color: var(--text-light);
+      line-height: 1.6;
+    }
+
+    /* ── Disclosure ── */
+    .disclosure {
+      background: #EEF1F5;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .disclosure h3 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .disclosure p, .disclosure ul {
+      font-size: 13px;
+      color: var(--text-light);
+      line-height: 1.6;
+    }
+
+    .disclosure ul {
+      padding-left: 18px;
+      margin-top: 6px;
+    }
+
+    .disclosure li {
+      margin-bottom: 4px;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 16px 0 32px;
+    }
+
+    .footer p {
+      font-size: 12px;
+      color: #8A95A5;
+    }
+
+    .footer .lock-icon {
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 4px;
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- ── Header ── -->
+    <div class="header">
+      <div class="logo-circle">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 8h-3V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM12 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3-9H9V6c0-1.66 1.34-3 3-3s3 1.34 3 3v2z"/>
+        </svg>
+      </div>
+      <h1>Haul-A-Holics LLC</h1>
+      <p>Secure Card on File — your card will not be charged today.</p>
+    </div>
+
+    <!-- ── Form ── -->
+    <div id="form-section">
+      <form id="card-form" class="card-form" autocomplete="on">
+        <div class="form-group">
+          <div class="name-row">
+            <div>
+              <label for="first-name">First Name</label>
+              <input type="text" id="first-name" name="given-name" autocomplete="given-name" placeholder="John" required>
+            </div>
+            <div>
+              <label for="last-name">Last Name</label>
+              <input type="text" id="last-name" name="family-name" autocomplete="family-name" placeholder="Smith" required>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" autocomplete="email" placeholder="john@example.com" required>
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <input type="tel" id="phone" name="tel" autocomplete="tel" placeholder="(770) 555-1234" required>
+        </div>
+
+        <div class="form-group">
+          <label>Card Information</label>
+          <div id="card-container"></div>
+        </div>
+
+        <div id="form-message" class="message"></div>
+
+        <button id="submit-btn" type="submit" class="submit-btn">
+          Save Card Securely
+        </button>
+      </form>
+
+      <!-- ── Disclosure ── -->
+      <div class="disclosure">
+        <h3>How This Works</h3>
+        <p>By saving your card, you authorize Haul-A-Holics LLC to:</p>
+        <ul>
+          <li>Store your card securely through Square</li>
+          <li>Charge the final amount only after our crew confirms your load size on-site</li>
+          <li>A temporary $1 verification hold may appear — this is <strong>not a charge</strong> and drops off within 1–3 business days</li>
+        </ul>
+        <p style="margin-top: 10px;">Your card info is encrypted end-to-end by Square. Haul-A-Holics never sees or stores your full card number.</p>
+      </div>
+    </div>
+
+    <!-- ── Success Screen ── -->
+    <div id="success-screen" class="success-screen">
+      <div class="success-icon">
+        <svg viewBox="0 0 24 24">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+      <h2>Card Saved Successfully!</h2>
+      <p>Your card is securely on file. You will <strong>not</strong> be charged until our crew confirms your load on-site. You can close this page.</p>
+    </div>
+
+    <!-- ── Footer ── -->
+    <div class="footer">
+      <p>
+        <svg class="lock-icon" width="12" height="12" viewBox="0 0 24 24" fill="#8A95A5">
+          <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+        </svg>
+        Secured by Square · Haul-A-Holics LLC · Stone Mountain, GA
+      </p>
+    </div>
+  </div>
+
+  <!-- Square Web Payments SDK -->
+  <script src="https://web.squarecdn.com/v1/square.js"></script>
+
+  <script>
+    // ── State ──
+    let card;
+    const form = document.getElementById('card-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const formMessage = document.getElementById('form-message');
+    const formSection = document.getElementById('form-section');
+    const successScreen = document.getElementById('success-screen');
+
+    // ── Initialize Square ──
+    async function initSquare() {
+      try {
+        const resp = await fetch('/api/square-config');
+        const config = await resp.json();
+
+        const payments = window.Square.payments(config.applicationId, config.locationId);
+        card = await payments.card();
+        await card.attach('#card-container');
+      } catch (err) {
+        showMessage('Unable to load the payment form. Please refresh or contact us.', 'error');
+        console.error('Square init error:', err);
+      }
+    }
+
+    // ── Form Submit ──
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearMessage();
+
+      const firstName = document.getElementById('first-name').value.trim();
+      const lastName = document.getElementById('last-name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+
+      if (!firstName || !lastName || !email || !phone) {
+        showMessage('Please fill in all fields.', 'error');
+        return;
+      }
+
+      setLoading(true);
+
+      try {
+        // Step 1: Tokenize card (no charge — just creates a secure token)
+        const tokenResult = await card.tokenize();
+
+        if (tokenResult.status !== 'OK') {
+          const errorMsg = tokenResult.errors
+            ? tokenResult.errors.map(e => e.message).join(', ')
+            : 'Please check your card details and try again.';
+          showMessage(errorMsg, 'error');
+          setLoading(false);
+          return;
+        }
+
+        // Step 2: Send token + customer info to our backend
+        const response = await fetch('/api/save-card', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sourceId: tokenResult.token,
+            firstName,
+            lastName,
+            email,
+            phone
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          // Show success screen
+          formSection.classList.add('hidden');
+          successScreen.classList.add('visible');
+        } else {
+          showMessage(result.error || 'Something went wrong. Please try again or call us.', 'error');
+        }
+      } catch (err) {
+        showMessage('Connection error. Please check your internet and try again.', 'error');
+        console.error('Save card error:', err);
+      }
+
+      setLoading(false);
+    });
+
+    // ── Helpers ──
+    function showMessage(text, type) {
+      formMessage.textContent = text;
+      formMessage.className = `message ${type}`;
+    }
+
+    function clearMessage() {
+      formMessage.className = 'message';
+      formMessage.textContent = '';
+    }
+
+    function setLoading(loading) {
+      submitBtn.disabled = loading;
+      submitBtn.innerHTML = loading
+        ? '<span class="spinner"></span>Saving...'
+        : 'Save Card Securely';
+    }
+
+    // ── Phone formatting ──
+    document.getElementById('phone').addEventListener('input', function(e) {
+      let val = e.target.value.replace(/\D/g, '');
+      if (val.length > 10) val = val.slice(0, 10);
+      if (val.length >= 7) {
+        e.target.value = `(${val.slice(0,3)}) ${val.slice(3,6)}-${val.slice(6)}`;
+      } else if (val.length >= 4) {
+        e.target.value = `(${val.slice(0,3)}) ${val.slice(3)}`;
+      } else if (val.length > 0) {
+        e.target.value = `(${val}`;
+      }
+    });
+
+    // ── Go ──
+    initSquare();
+  </script>
+</body>
+</html>
